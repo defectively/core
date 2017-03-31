@@ -25,6 +25,7 @@
         /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
         /// </summary>
         private void InitializeComponent() {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginDialogue));
             this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.PictureBox1 = new System.Windows.Forms.PictureBox();
@@ -40,9 +41,13 @@
             this.btnRegister = new System.Windows.Forms.Button();
             this.btnLogin = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.cmsLogin = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.tsmiDefectively = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSrvcs = new System.Windows.Forms.ToolStripMenuItem();
             this.TableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox1)).BeginInit();
             this.Panel1.SuspendLayout();
+            this.cmsLogin.SuspendLayout();
             this.SuspendLayout();
             // 
             // TableLayoutPanel1
@@ -198,6 +203,30 @@
             this.lblTitle.TabIndex = 4;
             this.lblTitle.Text = "Login";
             // 
+            // cmsLogin
+            // 
+            this.cmsLogin.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiDefectively,
+            this.tsmiSrvcs});
+            this.cmsLogin.Name = "cmsLogin";
+            this.cmsLogin.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.cmsLogin.ShowCheckMargin = true;
+            this.cmsLogin.ShowImageMargin = false;
+            this.cmsLogin.Size = new System.Drawing.Size(187, 70);
+            // 
+            // tsmiDefectively
+            // 
+            this.tsmiDefectively.BackColor = System.Drawing.Color.White;
+            this.tsmiDefectively.Name = "tsmiDefectively";
+            this.tsmiDefectively.Size = new System.Drawing.Size(186, 22);
+            this.tsmiDefectively.Text = "with Defectively";
+            // 
+            // tsmiSrvcs
+            // 
+            this.tsmiSrvcs.Name = "tsmiSrvcs";
+            this.tsmiSrvcs.Size = new System.Drawing.Size(186, 22);
+            this.tsmiSrvcs.Text = "with FΞSTIVΛL SRVCS";
+            // 
             // LoginDialogue
             // 
             this.AcceptButton = this.btnLogin;
@@ -218,6 +247,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox1)).EndInit();
             this.Panel1.ResumeLayout(false);
             this.Panel1.PerformLayout();
+            this.cmsLogin.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -238,6 +268,9 @@
         internal System.Windows.Forms.Button btnRegister;
         internal System.Windows.Forms.Button btnLogin;
         internal System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.ContextMenuStrip cmsLogin;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDefectively;
+        private System.Windows.Forms.ToolStripMenuItem tsmiSrvcs;
     }
 }
 

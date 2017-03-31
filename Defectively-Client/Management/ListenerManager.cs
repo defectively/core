@@ -18,7 +18,7 @@ namespace DefectivelyClient.Management
             } catch { }
         }
 
-        public static void InvokeSpecialEvent(EventArguments e) {
+        public static void InvokeSpecialEvent(DynamicEvent e) {
             try {
                 Listeners.FindAll(l => l.Event == Event.Dynamic).ForEach(l => l.Delegate.DynamicInvoke(e));
             } catch { }

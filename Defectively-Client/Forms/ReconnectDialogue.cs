@@ -27,11 +27,13 @@ namespace DefectivelyClient.Forms
 
         private void OnBtnRemoveClick(object sender, EventArgs e) {
             if (!RemovedIndexes.Contains(SelectedIndex)) {
-                if (lbxServers.Items.Count > 1) {
+                if (lbxServers.Items.Count > 1 && RemovedIndexes.Count < lbxServers.Items.Count - 1) {
                     if (MessageBox.Show("This will remove the connection details after pressing \"Connect\".\nYou cannot connect to a an entry that is marked as \"will be removed\" and you cannot revert this action without canceling.\nAre you sure you want to remove this entry?", "Defectively", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
                         RemovedIndexes.Add(SelectedIndex);
                         lbxServers.Items[SelectedIndex] = lbxServers.Items[SelectedIndex] + " (will be removed)";
                     }
+                } else if (lbxServers.Items.Count > 1 && RemovedIndexes.Count == lbxServers.Items.Count - 1) {
+                    MessageBox.Show("You cannot delete all entries at once.\nPress \"Connect\" and restart Defectively to delete this last entry.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 } else {
                     if (MessageBox.Show("This will remove the connection details and connect to this server.\nYou cannot revert this action.\nAre you sure you want to remove this entry?", "Defectively", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
                         RemovedIndexes.Add(SelectedIndex);

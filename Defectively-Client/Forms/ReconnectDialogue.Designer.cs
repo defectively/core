@@ -35,7 +35,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(265, 241);
+            this.btnCancel.Location = new System.Drawing.Point(262, 245);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(90, 25);
             this.btnCancel.TabIndex = 0;
@@ -45,7 +45,7 @@
             // btnConnect
             // 
             this.btnConnect.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnConnect.Location = new System.Drawing.Point(169, 241);
+            this.btnConnect.Location = new System.Drawing.Point(166, 245);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(90, 25);
             this.btnConnect.TabIndex = 1;
@@ -57,7 +57,7 @@
             this.Label1.AutoSize = true;
             this.Label1.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.Label1.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.Label1.Location = new System.Drawing.Point(8, 12);
+            this.Label1.Location = new System.Drawing.Point(8, 11);
             this.Label1.Name = "Label1";
             this.Label1.Size = new System.Drawing.Size(82, 21);
             this.Label1.TabIndex = 4;
@@ -65,17 +65,17 @@
             // 
             // lbxServers
             // 
-            this.lbxServers.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lbxServers.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lbxServers.FormattingEnabled = true;
-            this.lbxServers.ItemHeight = 15;
-            this.lbxServers.Location = new System.Drawing.Point(12, 45);
+            this.lbxServers.ItemHeight = 17;
+            this.lbxServers.Location = new System.Drawing.Point(12, 41);
             this.lbxServers.Name = "lbxServers";
-            this.lbxServers.Size = new System.Drawing.Size(343, 184);
+            this.lbxServers.Size = new System.Drawing.Size(340, 191);
             this.lbxServers.TabIndex = 5;
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(12, 241);
+            this.btnRemove.Location = new System.Drawing.Point(12, 245);
             this.btnRemove.Name = "btnRemove";
             this.btnRemove.Size = new System.Drawing.Size(90, 25);
             this.btnRemove.TabIndex = 6;
@@ -89,7 +89,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(367, 276);
+            this.ClientSize = new System.Drawing.Size(364, 281);
             this.ControlBox = false;
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.lbxServers);

@@ -63,19 +63,15 @@ namespace DefectivelyClient.Forms
 
             e.Graphics.FillRectangle(new LinearGradientBrush(new Point(0, 0), new Point(0, 120), Color.Transparent, Color.FromArgb(190, 0, 0, 0)), FullRectangle);
 
-            //var AvatarRectangle = new Rectangle(20, 30, 120, 120);
-            //e.Graphics.DrawImage(Circlelize(Avatar), AvatarRectangle);
-
-            //var TextRectangle = new Rectangle(160, 30, 435, 90);
-            //e.Graphics.DrawString(AccountName, new Font("Segoe UI Semibold", 34F), new SolidBrush(Color.WhiteSmoke), TextRectangle, new StringFormat { LineAlignment = StringAlignment.Center });
-
-            //e.Graphics.FillEllipse(new SolidBrush(ColorTranslator.FromHtml(Online ? "#19E68C" : "#FC3539")), new Rectangle(615, 70, 15, 15));
-
             var AvatarRectangle = new Rectangle(20, 20, 80, 80);
             e.Graphics.DrawImage(Circlelize(Avatar), AvatarRectangle);
             var TextRectangle = new Rectangle(120, 0, 530, 120);
-            e.Graphics.DrawString(AccountName, new Font("Segoe UI Semibold", 34F), new SolidBrush(Color.WhiteSmoke), TextRectangle, new StringFormat { LineAlignment = StringAlignment.Center });
-            e.Graphics.FillEllipse(new SolidBrush(ColorTranslator.FromHtml(Online ? "#19E68C" : "#FC3539")), new Rectangle(615, 52, 15, 15));
+            var WhiteBrush = new SolidBrush(Color.WhiteSmoke);
+            e.Graphics.DrawString(AccountName, new Font("Segoe UI Semibold", 34F), WhiteBrush, TextRectangle, new StringFormat { LineAlignment = StringAlignment.Center });
+            var StateBrush = new SolidBrush(ColorTranslator.FromHtml(Online ? "#19E68C" : "#FC3539"));
+            e.Graphics.FillEllipse(StateBrush, new Rectangle(615, 52, 15, 15));
+            WhiteBrush.Dispose();
+            StateBrush.Dispose();
             GC.Collect();
         }
 

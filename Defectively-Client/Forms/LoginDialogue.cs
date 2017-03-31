@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -9,6 +10,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Defectively;
 using Defectively.Compatibility;
+using Defectively.Authentication;
+using Defectively.UI;
 using Newtonsoft.Json;
 
 namespace DefectivelyClient.Forms
@@ -32,6 +35,8 @@ namespace DefectivelyClient.Forms
             btnLogin.Click += OnBtnLoginClick;
             Closing += OnClosing;
             Shown += OnShown;
+            tsmiDefectively.Click += OnTsmiDefectivelyClick;
+            tsmiSrvcs.Click += OnTsmiSrvcsClick;
 
             this.Text += $" - Version {new Version().ToMediumString()}";
 
@@ -60,6 +65,8 @@ namespace DefectivelyClient.Forms
                     }
                 }
             }
+
+            cmsLogin.Renderer = new ToolStripProfessionalRenderer(new ToolStripColorTable());
         }
 
         private void OnShown(object sender, EventArgs e) {
@@ -88,7 +95,7 @@ namespace DefectivelyClient.Forms
                         ServiceProvider.FromXmlString(PublicKey);
                         PreServiceProvider.FromXmlString(PrivateKey);
                         var DConnection = new DiscardableConnection(FClient.GetStream());
-                        DConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Enumerations.Action.GetServerMetaData,""), ServiceProvider));
+                        DConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Enumerations.Action.GetServerMetaData, ""), ServiceProvider));
                         MetaData = JsonConvert.DeserializeObject<ServerMetaData>(Cryptography.RSADecrypt(DConnection.GetRawStreamContent(), PreServiceProvider));
                         btnRegister.Enabled = MetaData.AcceptsRegistration;
                         try {
@@ -131,6 +138,7 @@ namespace DefectivelyClient.Forms
                         btnLogin.Text = "Login";
                         tbxAccountId.Enabled = tbxPassword.Enabled = true;
                         tbxAddress.Enabled = tbxPort.Enabled = false;
+                        this.Text += $" - @{MetaData.Name}";
                     } else {
                         MessageBox.Show("The given port is invalid. Valid ports only contain numbers.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
@@ -138,31 +146,62 @@ namespace DefectivelyClient.Forms
                     MessageBox.Show("The given address is invalid. Valid could be:\n- a top-level domain like \"festival.ml\"\n- an IP like \"127.0.0.1\"\n- or \"localhost\".", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             } else {
-                var MainWindow = new MainWindow();
-                var Port = int.Parse(tbxPort.Text);
-                if (!string.IsNullOrEmpty(tbxAccountId.Text) && !string.IsNullOrWhiteSpace(tbxAccountId.Text)) {
-                    if (!string.IsNullOrEmpty(tbxPassword.Text) && !string.IsNullOrWhiteSpace(tbxPassword.Text)) {
-                        MainWindow.Show();
-                        MainWindow.Connect(tbxAddress.Text, Port, tbxAccountId.Text, tbxPassword.Text);
+                cmsLogin.Show((Control) sender, new Point(1, 1), ToolStripDropDownDirection.Right);
+            }
+        }
 
+        private void OnTsmiSrvcsClick(object sender, EventArgs e) {
+            var MainWindow = new MainWindow();
+            var Port = int.Parse(tbxPort.Text);
+            if (!string.IsNullOrEmpty(tbxAccountId.Text) && !string.IsNullOrWhiteSpace(tbxAccountId.Text)) {
+                if (!string.IsNullOrEmpty(tbxPassword.Text) && !string.IsNullOrWhiteSpace(tbxPassword.Text)) {
 
-                        var Connections = new List<string>();
-                        if (File.Exists(Application.StartupPath + "\\.connections")) {
-                            Connections = File.ReadAllLines(Application.StartupPath + "\\.connections").ToList();
-                        }
-                        if (!Connections.Contains($"{tbxAddress.Text}:{tbxPort.Text}")) {
-                            Connections.Add($"{tbxAddress.Text}:{tbxPort.Text}");
-                        }
-                        File.WriteAllLines(Application.StartupPath + "\\.connections", Connections);
+                    var Token = SrvcsApi.Call("auth", tbxAccountId.Text, tbxPassword.Text);
 
+                    MainWindow.Show();
+                    MainWindow.ConnectExternal(tbxAddress.Text, Port, "srvcs", tbxAccountId.Text, Token);
 
-                        Hide();
-                    } else {
-                        MessageBox.Show("You must enter a password in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    var Connections = new List<string>();
+                    if (File.Exists(Application.StartupPath + "\\.connections")) {
+                        Connections = File.ReadAllLines(Application.StartupPath + "\\.connections").ToList();
                     }
+                    if (!Connections.Contains($"{tbxAddress.Text}:{tbxPort.Text}")) {
+                        Connections.Add($"{tbxAddress.Text}:{tbxPort.Text}");
+                    }
+                    File.WriteAllLines(Application.StartupPath + "\\.connections", Connections);
+
+                    Hide();
                 } else {
-                    MessageBox.Show("You must enter an account-id in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("You must enter a password in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            } else {
+                MessageBox.Show("You must enter an account-id in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void OnTsmiDefectivelyClick(object sender, EventArgs e) {
+            var MainWindow = new MainWindow();
+            var Port = int.Parse(tbxPort.Text);
+            if (!string.IsNullOrEmpty(tbxAccountId.Text) && !string.IsNullOrWhiteSpace(tbxAccountId.Text)) {
+                if (!string.IsNullOrEmpty(tbxPassword.Text) && !string.IsNullOrWhiteSpace(tbxPassword.Text)) {
+                    MainWindow.Show();
+                    MainWindow.Connect(tbxAddress.Text, Port, tbxAccountId.Text, tbxPassword.Text);
+
+                    var Connections = new List<string>();
+                    if (File.Exists(Application.StartupPath + "\\.connections")) {
+                        Connections = File.ReadAllLines(Application.StartupPath + "\\.connections").ToList();
+                    }
+                    if (!Connections.Contains($"{tbxAddress.Text}:{tbxPort.Text}")) {
+                        Connections.Add($"{tbxAddress.Text}:{tbxPort.Text}");
+                    }
+                    File.WriteAllLines(Application.StartupPath + "\\.connections", Connections);
+
+                    Hide();
+                } else {
+                    MessageBox.Show("You must enter a password in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            } else {
+                MessageBox.Show("You must enter an account-id in order to connect.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

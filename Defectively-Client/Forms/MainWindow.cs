@@ -104,17 +104,33 @@ namespace DefectivelyClient.Forms
                 FConnection.HmacKey = Cryptography.GenerateHmacKey();
                 FConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Convert.ToBase64String(SessionData.Key),Convert.ToBase64String(SessionData.IV),Convert.ToBase64String(FConnection.HmacKey)), ServiceProvider));
                 FConnection.SetStreamContent(string.Join("|", accountId, Cryptography.ComputeHash(password)));
-
-                // Clear Channel Control
                 ChannelControl.Clear();
-
-                // Add Handlers
-
-                //Directory.EnumerateFiles(Path.Combine(Application.StartupPath, "Extensions")).ToList().ForEach(File.Delete);
                 ExtensionPool.RegisterClient(this);
-
             } catch {
                 var Result = MessageBox.Show("Defectively couldn't connect to the server. Make sure the entered address and port is correct and the server is up and running and that your account isn't connected already.", "Defectively", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                if (Result == DialogResult.Retry) {
+                    Connect(address, port, accountId, password);
+                } else {
+                    Application.Restart();
+                }
+            }
+        }
+
+        public void ConnectExternal(string address, int port, string service, string accountId, string password) {
+            try {
+                FClient.Connect(address, port);
+                FConnection = new Connection(FClient.GetStream());
+                Listening.Start();
+                ServiceProvider.FromXmlString(PublicKey);
+                var SessionData = Cryptography.GenerateAesData();
+                FConnection.AesData = SessionData;
+                FConnection.HmacKey = Cryptography.GenerateHmacKey();
+                FConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Convert.ToBase64String(SessionData.Key), Convert.ToBase64String(SessionData.IV), Convert.ToBase64String(FConnection.HmacKey)), ServiceProvider));
+                FConnection.SetStreamContent(string.Join("|", $"{service}/{accountId}", password));
+                ChannelControl.Clear();
+                ExtensionPool.RegisterClient(this);
+            } catch {
+                var Result = MessageBox.Show("Defectively couldn't connect to the server. Make sure the entered address and port is correct and the server is up and running and that your account isn't connected already. Also make sure that the server supports your selected authorization method.", "Defectively", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                 if (Result == DialogResult.Retry) {
                     Connect(address, port, accountId, password);
                 } else {
@@ -165,6 +181,7 @@ namespace DefectivelyClient.Forms
                         Directory.CreateDirectory(Path.Combine(Application.StartupPath, "Sessions", $"{FConnection.SessionId}.session"));
                         SessionPath = Path.Combine(Application.StartupPath, "Sessions", $"{FConnection.SessionId}.session");
                         File.WriteAllText(SessionPath + "\\meta.json", JsonConvert.SerializeObject(Application.OpenForms.OfType<LoginDialogue>().ToList()[0].MetaData, Formatting.Indented));
+                        this.Text += $" - {MyId}@{Application.OpenForms.OfType<LoginDialogue>().ToList()[0].MetaData.Name}";
                     } else if (Packet[1] == "authentificationFailed") {
                         MessageBox.Show("Authentification failed. The given password isn't correct.\nMake sure you entered the correct password and try again.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Restart();
@@ -183,7 +200,7 @@ namespace DefectivelyClient.Forms
                     ExtensionCount++;
                     break;
                 case Enumerations.Action.Extension:
-                    ListenerManager.InvokeSpecialEvent(JsonConvert.DeserializeObject<EventArguments>(Packet[1]));
+                    ListenerManager.InvokeSpecialEvent(JsonConvert.DeserializeObject<DynamicEvent>(Packet[1]));
                     break;
                 case Enumerations.Action.Plain:
                     Invoke(new Action(() => ChannelControl.AddMessage(JsonConvert.DeserializeObject<MessagePacket>(Packet[1]))));
@@ -201,7 +218,6 @@ namespace DefectivelyClient.Forms
                 case Enumerations.Action.SetChannelList:
                     Channels = JsonConvert.DeserializeObject<List<Channel>>(Packet[1]);
                     DisplayAccounts();
-                    // Refresh Channels
                     break;
                 case Enumerations.Action.SetLuvaValues:
                     LuvaValues = JsonConvert.DeserializeObject<List<string>>(Packet[1]);
@@ -292,16 +308,18 @@ namespace DefectivelyClient.Forms
         }
 
         private Panel GetHeaderPanel(string header, Color background) {
-            var Panel = new Panel();
-            Panel.Width = pnlAccounts.Width - 17;
-            Panel.Height = 20;
-            Panel.BackColor = background;
-            var Label = new Label();
-            Label.Text = header;
-            Label.ForeColor = Color.White;
-            Label.AutoSize = false;
-            Label.TextAlign = ContentAlignment.MiddleCenter;
-            Label.Dock = DockStyle.Fill;
+            var Panel = new Panel {
+                Width = pnlAccounts.Width - 17,
+                Height = 20,
+                BackColor = background
+            };
+            var Label = new Label {
+                Text = header,
+                ForeColor = Color.White,
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill
+            };
             Panel.Controls.Add(Label);
             return Panel;
         }
@@ -372,6 +390,7 @@ namespace DefectivelyClient.Forms
                 Brush = new SolidBrush(ColorTranslator.FromHtml("#FC3539"));
             }
             e.Graphics.FillEllipse(Brush, new RectangleF(0, 0, 19F, 19F));
+            Brush.Dispose();
         }
 
         private void SetControlAccessability() {
@@ -387,9 +406,7 @@ namespace DefectivelyClient.Forms
         }
 
         public string Serialize(dynamic content, bool indented) {
-            if (indented)
-                return JsonConvert.SerializeObject(content, Formatting.Indented);
-            return JsonConvert.SerializeObject(content);
+            return indented ? JsonConvert.SerializeObject(content, Formatting.Indented) : JsonConvert.SerializeObject(content);
         }
 
         public dynamic Deserialize(string content) {

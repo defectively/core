@@ -78,7 +78,8 @@
     <ApplicationIcon>defectively.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Defectively">
+    <Reference Include="Defectively, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\Defectively.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
