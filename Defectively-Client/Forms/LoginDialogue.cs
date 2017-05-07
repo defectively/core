@@ -136,7 +136,7 @@ namespace DefectivelyClient.Forms
                         }
 
                         if (MetaData.IsLockdown) {
-                            MessageBox.Show("Defectively has successfully established a connection to the server. However, the server is on Lockdown and does not accept any new connection at the moment.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            MessageBox.Show("Defectively has successfully established a connection to the server. However, the server is on lockdown and does not accept any new connection at the moment.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
