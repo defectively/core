@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -8,8 +9,14 @@ namespace DefectivelyClient
 {
     public partial class ChannelControl : UserControl
     {
+        public delegate void LinkClickedEventHandler(object sender, LinkEventArgs e);
+
         public event LinkClickedEventHandler LinkClicked;
-        public delegate void LinkClickedEventHandler(string url);
+
+        public virtual void OnLinkClicked(LinkEventArgs e) {
+            LinkClicked?.Invoke(this, e);
+        }
+
         public string Id { get; set; }
 
         private Queue<MessagePacket> MessageQueue = new Queue<MessagePacket>();
@@ -61,8 +68,17 @@ namespace DefectivelyClient
         private void OnWebConversationNavigating(object sender, WebBrowserNavigatingEventArgs e) {
             if (e.Url.ToString().Split('/').Last() != "style.html" && e.Url.ToString() != "about:blank") {
                 e.Cancel = true;
-                LinkClicked?.Invoke(e.Url.ToString());
+                OnLinkClicked(new LinkEventArgs(e.Url.ToString()));
             }
+        }
+    }
+
+    public class LinkEventArgs : EventArgs
+    {
+        public string Url { get; }
+
+        public LinkEventArgs(string url) {
+            Url = url;
         }
     }
 }

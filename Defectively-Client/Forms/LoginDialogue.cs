@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -38,7 +39,7 @@ namespace DefectivelyClient.Forms
             tsmiDefectively.Click += OnTsmiDefectivelyClick;
             tsmiSrvcs.Click += OnTsmiSrvcsClick;
 
-            this.Text += $" - Version {new Version().ToMediumString()}";
+            this.Text += $" - Version {VersionHelper.GetFullStringFromAssembly(Assembly.GetExecutingAssembly())}";
 
             var SessionsPath = Path.Combine(Application.StartupPath, "Sessions");
             if (Directory.Exists(SessionsPath)) {
@@ -111,18 +112,23 @@ namespace DefectivelyClient.Forms
                             // Implement
                         }
 
-                        if (!MetaData.ServerVersion.InRange(new Version())) {
+                        var ClientVersion = VersionHelper.GetVersionFromAssembly(Assembly.GetExecutingAssembly());
+                        var SupportedServerVersion = VersionHelper.GetLSVersionFromAssembly<LSServerVersionAttribute>(Assembly.GetExecutingAssembly());
+                        var ServerVersion = new Version(MetaData.Version);
+                        var SupportedClientVersion = new Version(MetaData.SVersion);
+
+                        if (!ServerVersion.IsSupportedBy(SupportedServerVersion)) {
                             var Dialog = new VersionConflictDialogue();
-                            Dialog.Initialize(new Version(), MetaData.ServerVersion, MetaData.ServerCoreVersion, "Your client is running on a version that does not support the server you're connecting to. To be able to connect to this server please update the server to the least supported version or use an older client.");
+                            Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "Your client is running on a version that does not support the server you're connecting to. To be able to connect to this server please update the server to the least supported version or use an older client.");
                             Dialog.ShowDialog();
                             tbxAddress.Clear();
                             tbxPort.Clear();
                             return;
                         }
 
-                        if (!new Version().InRange(MetaData.ServerVersion)) {
+                        if (!ClientVersion.IsSupportedBy(SupportedClientVersion)) {
                             var Dialog = new VersionConflictDialogue();
-                            Dialog.Initialize(new Version(), MetaData.ServerVersion, MetaData.ServerCoreVersion, "The server you're connecting to is running on a version that does not support your client. To be able to connect to this server please update your client to the least supported version or use an older server.");
+                            Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "The server you're connecting to is running on a version that does not support your client. To be able to connect to this server please update your client to the least supported version or use an older server.");
                             Dialog.ShowDialog();
                             tbxAddress.Clear();
                             tbxPort.Clear();
