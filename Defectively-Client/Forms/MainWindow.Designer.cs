@@ -25,6 +25,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -39,6 +40,7 @@
             this.btnChannels = new System.Windows.Forms.Button();
             this.btnAccounts = new System.Windows.Forms.Button();
             this.cbxSidebar = new System.Windows.Forms.CheckBox();
+            this.ntiNotification = new System.Windows.Forms.NotifyIcon(this.components);
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -104,6 +106,8 @@
             // 
             this.tbxInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbxInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.tbxInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.tbxInput.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.tbxInput.Location = new System.Drawing.Point(11, 8);
             this.tbxInput.Name = "tbxInput";
@@ -190,6 +194,12 @@
             this.cbxSidebar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.cbxSidebar.UseVisualStyleBackColor = true;
             // 
+            // ntiNotification
+            // 
+            this.ntiNotification.Icon = ((System.Drawing.Icon)(resources.GetObject("ntiNotification.Icon")));
+            this.ntiNotification.Text = "notifyIcon1";
+            this.ntiNotification.Visible = true;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -227,5 +237,6 @@
         private System.Windows.Forms.Button btnManagement;
         private System.Windows.Forms.Button btnChannels;
         private System.Windows.Forms.Button btnAccounts;
+        private System.Windows.Forms.NotifyIcon ntiNotification;
     }
 }

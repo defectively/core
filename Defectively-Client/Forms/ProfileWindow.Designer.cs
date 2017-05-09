@@ -103,7 +103,7 @@
             this.lblRank.AutoSize = true;
             this.lblRank.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblRank.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.lblRank.Location = new System.Drawing.Point(12, 203);
+            this.lblRank.Location = new System.Drawing.Point(11, 203);
             this.lblRank.Name = "lblRank";
             this.lblRank.Size = new System.Drawing.Size(41, 20);
             this.lblRank.TabIndex = 6;
@@ -126,7 +126,7 @@
             this.lblMoney.AutoSize = true;
             this.lblMoney.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblMoney.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.lblMoney.Location = new System.Drawing.Point(160, 203);
+            this.lblMoney.Location = new System.Drawing.Point(159, 203);
             this.lblMoney.Name = "lblMoney";
             this.lblMoney.Size = new System.Drawing.Size(54, 20);
             this.lblMoney.TabIndex = 15;
@@ -145,12 +145,12 @@
             // 
             // lblLastSeen
             // 
-            this.lblLastSeen.AutoSize = true;
+            this.lblLastSeen.AutoEllipsis = true;
             this.lblLastSeen.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lblLastSeen.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.lblLastSeen.Location = new System.Drawing.Point(448, 203);
+            this.lblLastSeen.Location = new System.Drawing.Point(447, 203);
             this.lblLastSeen.Name = "lblLastSeen";
-            this.lblLastSeen.Size = new System.Drawing.Size(54, 20);
+            this.lblLastSeen.Size = new System.Drawing.Size(191, 20);
             this.lblLastSeen.TabIndex = 17;
             this.lblLastSeen.Text = "Offline";
             // 

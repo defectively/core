@@ -14,6 +14,7 @@ namespace DefectivelyClient.Forms
         public Image Header { get; set; }
         public bool Online { get; set; }
         public string AccountName { get; set; }
+        public string AccountId { get; set; }
         public bool Editable { get; set; }
         public string Rank { get; set; }
         public string Money { get; set; }
@@ -38,11 +39,12 @@ namespace DefectivelyClient.Forms
             Header.Dispose();
         }
 
-        public DialogResult ShowDialog(Image avatar, Image header, bool online, string accountName, bool editable, string rank, string money, string lastSeen) {
+        public DialogResult ShowDialog(Image avatar, Image header, bool online, string accountName, string accountId, bool editable, string rank, string money, string lastSeen) {
             Avatar = avatar;
             Header = header;
             Online = online;
             AccountName = accountName;
+            AccountId = accountId;
             Editable = editable || MainWindow.LuvaValues.CheckValueSilently("defectively.canEditAccounts");
             Rank = rank;
             Money = money;
@@ -50,6 +52,8 @@ namespace DefectivelyClient.Forms
             lblRank.Text = Rank;
             lblMoney.Text = Money;
             lblLastSeen.Text = LastSeen;
+
+            this.Text = $"Defectively - Profile of {AccountName} (@{AccountId})";
             return base.ShowDialog();
         }
 
@@ -65,7 +69,7 @@ namespace DefectivelyClient.Forms
 
             var AvatarRectangle = new Rectangle(20, 20, 80, 80);
             e.Graphics.DrawImage(Circlelize(Avatar), AvatarRectangle);
-            var TextRectangle = new Rectangle(120, 0, 530, 120);
+            var TextRectangle = new Rectangle(110, 0, 540, 120);
             var WhiteBrush = new SolidBrush(Color.WhiteSmoke);
             e.Graphics.DrawString(AccountName, new Font("Segoe UI Semibold", 34F), WhiteBrush, TextRectangle, new StringFormat { LineAlignment = StringAlignment.Center });
             var StateBrush = new SolidBrush(ColorTranslator.FromHtml(Online ? "#19E68C" : "#FC3539"));

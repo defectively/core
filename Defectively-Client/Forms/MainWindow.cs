@@ -11,6 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Defectively;
 using Defectively.Extension;
+using Defectively.UI;
 using DefectivelyClient.Management;
 using Newtonsoft.Json;
 
@@ -31,6 +32,7 @@ namespace DefectivelyClient.Forms
         private List<Account> Accounts;
         private List<Rank> Ranks;
         private List<Channel> Channels;
+        private string[] Commands;
         public static List<string> LuvaValues;
 
         public static string MyId;
@@ -39,6 +41,9 @@ namespace DefectivelyClient.Forms
         private string SessionPath;
 
         private ChannelControl ChannelControl;
+        private List<string> MessageHistory = new List<string>();
+
+        private Delegate NotificationCallback;
 
         public enum AccountState
         {
@@ -57,8 +62,9 @@ namespace DefectivelyClient.Forms
             btnSend.Click += OnBtnSendClick;
             ChannelControl = new ChannelControl { Dock = DockStyle.Fill };
             pnlConversation.Controls.Add(ChannelControl);
-            cbxSidebar.CheckedChanged += (sender, args) => pnlAccounts.Width = (cbxSidebar.Checked ? 300 : 0);
+            cbxSidebar.CheckedChanged += (sender, args) => pnlAccounts.Width = cbxSidebar.Checked ? 300 : 0;
             btnChannels.Click += OnBtnChannelsClicked;
+            ntiNotification.BalloonTipClicked += OnNotificationClicked;
         }
 
         private void OnBtnChannelsClicked(object sender, EventArgs e) {
@@ -70,6 +76,10 @@ namespace DefectivelyClient.Forms
         private void OnBtnSendClick(object sender, EventArgs e) {
             var Content = tbxInput.Text;
             if (!string.IsNullOrEmpty(Content) && !string.IsNullOrWhiteSpace(Content)) {
+                if (MessageHistory.Contains(Content)) {
+                    MessageHistory.Remove(Content);
+                }
+                MessageHistory.Add(Content);
                 FConnection.SetStreamContent(string.Join("|", Enumerations.Action.Plain, Content));
                 tbxInput.Clear();
             }
@@ -78,6 +88,16 @@ namespace DefectivelyClient.Forms
         private void OnTbxInputKeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) {
                 btnSend.PerformClick();
+            } else if (e.KeyCode == Keys.L && e.Control) {
+                if (MessageHistory.Count > 0) {
+                    using (var Dialog = new LastMessagesWindow()) {
+                        if (Dialog.ShowDialog(MessageHistory) == DialogResult.OK) {
+                            tbxInput.Text = Dialog.SelectedMessage;
+                        }
+                    }
+                } else {
+                    MessageBox.Show("Your message history is empty.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
         }
 
@@ -102,7 +122,7 @@ namespace DefectivelyClient.Forms
                 var SessionData = Cryptography.GenerateAesData();
                 FConnection.AesData = SessionData;
                 FConnection.HmacKey = Cryptography.GenerateHmacKey();
-                FConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Convert.ToBase64String(SessionData.Key),Convert.ToBase64String(SessionData.IV),Convert.ToBase64String(FConnection.HmacKey)), ServiceProvider));
+                FConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Convert.ToBase64String(SessionData.Key), Convert.ToBase64String(SessionData.IV), Convert.ToBase64String(FConnection.HmacKey)), ServiceProvider));
                 FConnection.SetStreamContent(string.Join("|", accountId, Cryptography.ComputeHash(password)));
                 ChannelControl.Clear();
                 ExtensionPool.RegisterClient(this);
@@ -214,10 +234,16 @@ namespace DefectivelyClient.Forms
                 case Enumerations.Action.SetAccountList:
                     Accounts = JsonConvert.DeserializeObject<List<Account>>(Packet[1]);
                     DisplayAccounts();
+
+                    SetAutocomplete();
+
                     break;
                 case Enumerations.Action.SetChannelList:
                     Channels = JsonConvert.DeserializeObject<List<Channel>>(Packet[1]);
                     DisplayAccounts();
+
+                    SetAutocomplete();
+
                     break;
                 case Enumerations.Action.SetLuvaValues:
                     LuvaValues = JsonConvert.DeserializeObject<List<string>>(Packet[1]);
@@ -226,12 +252,17 @@ namespace DefectivelyClient.Forms
                 case Enumerations.Action.SetChannel:
                     var Channel = JsonConvert.DeserializeObject<Channel>(Packet[1]);
                     Invoke(new Action(() => ChannelControl.Clear()));
-                    Invoke(new Action(() => ChannelControl.AddMessage(new MessagePacket {
-                        Content = $"You've entered \"{Channel.Name}\". (#{Channel.Id})",
-                        Time = DateTime.Now.ToShortTimeString(),
-                        Type = Enumerations.MessageType.Center
-                    })));
-
+                    if (!Channel.Hidden) {
+                        Invoke(new Action(() => ChannelControl.AddMessage(new MessagePacket {
+                            Content = $"You've entered \"{Channel.Name}\". (#{Channel.Id})",
+                            Time = DateTime.Now.ToShortTimeString(),
+                            Type = Enumerations.MessageType.Center
+                        })));
+                    }
+                    break;
+                case Enumerations.Action.SetCommandList:
+                    Commands = JsonConvert.DeserializeObject<string[]>(Packet[1]);
+                    SetAutocomplete();
                     break;
                 case Enumerations.Action.SetAccountData:
                     GC.Collect();
@@ -242,7 +273,7 @@ namespace DefectivelyClient.Forms
                     File.WriteAllBytes(AvatarPath, JsonConvert.DeserializeObject<byte[]>(Packet[1]));
                     var HeaderPath = Path.Combine(SessionPath, "Storage\\Header.png");
                     File.WriteAllBytes(HeaderPath, JsonConvert.DeserializeObject<byte[]>(Packet[2]));
-                    Window.ShowDialog(Image.FromFile(AvatarPath), Image.FromFile(HeaderPath), bool.Parse(Packet[3]), Packet[4], bool.Parse(Packet[5]), Packet[6], Packet[7], Packet[8]);
+                    Window.ShowDialog(Image.FromFile(AvatarPath), Image.FromFile(HeaderPath), bool.Parse(Packet[3]), Packet[4], Accounts.Find(a => a.Name == Packet[4]).Id, bool.Parse(Packet[5]), Packet[6], Packet[7], Packet[8]);
                     break;
                 case Enumerations.Action.ShowLuvaNotice:
                     var Severity = JsonConvert.DeserializeObject<Severity>(Packet[2]);
@@ -288,6 +319,9 @@ namespace DefectivelyClient.Forms
         }
 
         private void DisplayAccounts() {
+            if (Ranks == null || Ranks.Count == 0) {
+                return;
+            }
             try {
                 pnlAccounts.Controls.Clear();
                 YCoordinate = 0;
@@ -358,15 +392,29 @@ namespace DefectivelyClient.Forms
                     ForeColor = Color.DimGray,
                     Padding = new Padding(3),
                     Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                    Text = $"in {Channels.Find(c => c.MemberIds.Contains(Accounts.Find(a => a.Name == accountName).Id)).Name}",
                     AutoSize = true,
                     BackColor = Color.White,
                     Location = new Point(Label.Width + 21, 15),
                     Name = $"lblListStatusEntry:{accountName}",
                     Cursor = Cursors.Hand
                 };
+
+                var ChannelName = Channels.Find(c => c.MemberIds.Contains(Accounts.Find(a => a.Name == accountName).Id))?.Name;
+                if (string.IsNullOrEmpty(ChannelName)) {
+                    Label2.Text = "in Hidden Channel";
+                } else {
+                    Label2.Text = $"in {ChannelName}";
+                }
+
                 Label2.Click += OnAccountListEntryClicked;
                 Panel.Controls.Add(Label2);
+
+                if (Label2.Width > Status.Left - Label.Right - 21) {
+                    Label2.AutoSize = false;
+                    Label2.Height = 21;
+                    Label2.Width = Status.Left - Label.Right - 21;
+                    Label2.AutoEllipsis = true;
+                }
             } else {
                 Status.State = AccountState.Offline;
             }
@@ -397,6 +445,18 @@ namespace DefectivelyClient.Forms
 
         }
 
+        private void SetAutocomplete() {
+            Invoke(new Action(() => {
+                try {
+                    tbxInput.AutoCompleteCustomSource.Clear();
+                    tbxInput.AutoCompleteCustomSource.AddRange(Accounts.FindAll(a => a.Online).Select(a => $"@{a.Id}").ToArray());
+                    tbxInput.AutoCompleteCustomSource.Add("@all");
+                    tbxInput.AutoCompleteCustomSource.AddRange(Channels.Select(c => $"@#{c.Id}").ToArray());
+                    tbxInput.AutoCompleteCustomSource.AddRange(Commands);
+                } catch { }
+            }));
+        }
+
         public void DisplayForm(Form form) {
             Invoke(new Action<Form>(f => f.Show()), form);
         }
@@ -409,8 +469,24 @@ namespace DefectivelyClient.Forms
             return indented ? JsonConvert.SerializeObject(content, Formatting.Indented) : JsonConvert.SerializeObject(content);
         }
 
-        public dynamic Deserialize(string content) {
-            return JsonConvert.DeserializeObject(content);
+        public T Deserialize<T>(string content) {
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+
+        public void ShowNotification(Notification notification) {
+            NotificationCallback = notification.CallbackDelegate;
+            ntiNotification.ShowBalloonTip(notification.Timeout, notification.Title, notification.Content, ToolTipIcon.None);
+            try {
+                ntiNotification.Icon = this.Icon;
+            } catch { }
+        }
+
+        private void OnNotificationClicked(object sender, EventArgs e) {
+            NotificationCallback?.DynamicInvoke();
+        }
+
+        public void DisplayMessagePacket(MessagePacket packet) {
+            ChannelControl.AddMessage(packet);
         }
     }
 }
