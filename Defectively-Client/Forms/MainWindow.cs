@@ -51,6 +51,7 @@ namespace DefectivelyClient.Forms
             Online,
             Banned
         }
+
         private int YCoordinate;
 
 
@@ -103,13 +104,14 @@ namespace DefectivelyClient.Forms
 
         private void OnClosing(object sender, CancelEventArgs e) {
             try {
-                File.WriteAllText(SessionPath + "\\session.done", "");
                 IsSupposedClosing = true;
                 Listening.Abort();
                 FConnection.Dispose();
                 FClient.Dispose();
             } catch { }
-            File.WriteAllText(SessionPath + "\\session.done", "");
+            try {
+                File.WriteAllText(SessionPath + "\\session.done", "");
+            } catch { }
             Application.Exit();
         }
 
@@ -167,7 +169,9 @@ namespace DefectivelyClient.Forms
                     if (!IsSupposedClosing) {
                         MessageBox.Show("Defectively lost the connection to the server.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    File.WriteAllText(SessionPath + "\\session.done", "");
+                    try {
+                        File.WriteAllText(SessionPath + "\\session.done", "");
+                    } catch { }
                     FConnection.Dispose();
                     FClient.Dispose();
                     Application.Exit();
@@ -185,13 +189,23 @@ namespace DefectivelyClient.Forms
                 case Enumerations.Action.SetState:
                     if (Packet[1] == Enumerations.ClientState.Banned.ToString()) {
                         var Punishment = JsonConvert.DeserializeObject<Punishment>(Packet[2]);
-                        var Message = $"You're banned by {Punishment.CreatorId}. This ban lasts {(Punishment.Type == Enumerations.PunishmentType.Bann ? "permanently." : $"until\n{Punishment.EndDate.ToShortDateString()} {Punishment.EndDate.ToLongTimeString()}")}\nReason: {Punishment.Reason}";
-                        MessageBox.Show(Message, "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                        //var Message = $"You're banned by {Punishment.CreatorId}. This ban lasts {(Punishment.Type == Enumerations.PunishmentType.Bann ? "permanently." : $"until\n{Punishment.EndDate.ToShortDateString()} {Punishment.EndDate.ToLongTimeString()}")}\nReason: {Punishment.Reason}";
+                        //MessageBox.Show(Message, "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                        MessageBox.Show("Banned!");
+
                         Close();
                     } else if (Packet[1] == Enumerations.ClientState.Muted.ToString()) {
                         var Punishment = JsonConvert.DeserializeObject<Punishment>(Packet[2]);
-                        var Message = $"You're muted by {Punishment.CreatorId}. This mute lasts until:\n{Punishment.EndDate.ToShortDateString()} {Punishment.EndDate.ToLongTimeString()}\nReason: {Punishment.Reason}";
-                        MessageBox.Show(Message, "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                        //var Message = $"You're muted by {Punishment.CreatorId}. This mute lasts until:\n{Punishment.EndDate.ToShortDateString()} {Punishment.EndDate.ToLongTimeString()}\nReason: {Punishment.Reason}";
+                        //MessageBox.Show(Message, "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                        MessageBox.Show("Muted!");
+                    } else if (Packet[1] == Enumerations.ClientState.Duplicated.ToString()) {
+                        MessageBox.Show("Duplicated!");
+                        Close();
                     }
                     break;
                 case Enumerations.Action.LoginResult:

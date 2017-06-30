@@ -84,73 +84,79 @@ namespace DefectivelyClient.Forms
                 int Port;
                 if (string.IsNullOrEmpty(tbxAddress.Text))
                     tbxAddress.Text = "localhost";
-                if (Regex.IsMatch(tbxAddress.Text, "^localhost$|^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$)")) {
-                    if (int.TryParse(tbxPort.Text, out Port)) {
-                        var FClient = new TcpClient();
-                        try {
-                            FClient.Connect(tbxAddress.Text, Port);
-                        } catch {
-                            MessageBox.Show("Defectively couldn't connect to the server. Make sure the entered address and port is correct and the server is up and running.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-                        ServiceProvider.FromXmlString(PublicKey);
-                        PreServiceProvider.FromXmlString(PrivateKey);
-                        var DConnection = new DiscardableConnection(FClient.GetStream());
-                        DConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Enumerations.Action.GetServerMetaData, ""), ServiceProvider));
-                        MetaData = JsonConvert.DeserializeObject<ServerMetaData>(Cryptography.RSADecrypt(DConnection.GetRawStreamContent(), PreServiceProvider));
-                        btnRegister.Enabled = MetaData.AcceptsRegistration;
-                        try {
-                            DConnection.Dispose();
-                            FClient.Dispose();
-                        } catch { }
 
+                // if (Regex.IsMatch(tbxAddress.Text, "^localhost$|^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$)")) {
 
-                        if (MetaData.AcceptsGuests) {
-                            // Implement   
-                        }
-                        if (!MetaData.AcceptsRegistration) {
-                            // Implement
-                        }
-
-                        var ClientVersion = VersionHelper.GetVersionFromAssembly(Assembly.GetExecutingAssembly());
-                        var SupportedServerVersion = VersionHelper.GetLSVersionFromAssembly<LSServerVersionAttribute>(Assembly.GetExecutingAssembly());
-                        var ServerVersion = new Version(MetaData.Version);
-                        var SupportedClientVersion = new Version(MetaData.SVersion);
-
-                        if (!ServerVersion.IsSupportedBy(SupportedServerVersion)) {
-                            var Dialog = new VersionConflictDialogue();
-                            Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "Your client is running on a version that does not support the server you're connecting to. To be able to connect to this server please update the server to the least supported version or use an older client.");
-                            Dialog.ShowDialog();
-                            tbxAddress.Clear();
-                            tbxPort.Clear();
-                            return;
-                        }
-
-                        if (!ClientVersion.IsSupportedBy(SupportedClientVersion)) {
-                            var Dialog = new VersionConflictDialogue();
-                            Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "The server you're connecting to is running on a version that does not support your client. To be able to connect to this server please update your client to the least supported version or use an older server.");
-                            Dialog.ShowDialog();
-                            tbxAddress.Clear();
-                            tbxPort.Clear();
-                            return;
-                        }
-
-                        if (MetaData.IsLockdown) {
-                            MessageBox.Show("Defectively has successfully established a connection to the server. However, the server is on lockdown and does not accept any new connection at the moment.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-
-                        Connected = true;
-                        btnLogin.Text = "Login";
-                        tbxAccountId.Enabled = tbxPassword.Enabled = true;
-                        tbxAddress.Enabled = tbxPort.Enabled = false;
-                        this.Text += $" - @{MetaData.Name}";
-                    } else {
-                        MessageBox.Show("The given port is invalid. Valid ports only contain numbers.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (int.TryParse(tbxPort.Text, out Port)) {
+                    var FClient = new TcpClient();
+                    try {
+                        FClient.Connect(tbxAddress.Text, Port);
+                    } catch {
+                        MessageBox.Show("Defectively couldn't connect to the server. Make sure the entered address and port is correct and the server is up and running.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
                     }
+                    ServiceProvider.FromXmlString(PublicKey);
+                    PreServiceProvider.FromXmlString(PrivateKey);
+                    var DConnection = new DiscardableConnection(FClient.GetStream());
+                    DConnection.SetRawStreamContent(Cryptography.RSAEncrypt(string.Join("|", Enumerations.Action.GetServerMetaData, ""), ServiceProvider));
+                    
+                    MetaData = JsonConvert.DeserializeObject<ServerMetaData>(DConnection.GetRawStreamContent());
+
+                    btnRegister.Enabled = MetaData.AcceptsRegistration;
+                    try {
+                        DConnection.Dispose();
+                        FClient.Dispose();
+                    } catch { }
+
+
+                    if (MetaData.AcceptsGuests) {
+                        // Implement   
+                    }
+                    if (!MetaData.AcceptsRegistration) {
+                        // Implement
+                    }
+
+                    var ClientVersion = VersionHelper.GetVersionFromAssembly(Assembly.GetExecutingAssembly());
+                    var SupportedServerVersion = VersionHelper.GetLSVersionFromAssembly<LSServerVersionAttribute>(Assembly.GetExecutingAssembly());
+                    var ServerVersion = new Version(MetaData.Version);
+                    var SupportedClientVersion = new Version(MetaData.SVersion);
+
+                    if (!ServerVersion.IsSupportedBy(SupportedServerVersion)) {
+                        var Dialog = new VersionConflictDialogue();
+                        Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "Your client is running on a version that does not support the server you're connecting to. To be able to connect to this server please update the server to the least supported version or use an older client.");
+                        Dialog.ShowDialog();
+                        tbxAddress.Clear();
+                        tbxPort.Clear();
+                        return;
+                    }
+
+                    if (!ClientVersion.IsSupportedBy(SupportedClientVersion)) {
+                        var Dialog = new VersionConflictDialogue();
+                        Dialog.Initialize(ClientVersion, ServerVersion, MetaData.CVersion, VersionHelper.GetFullStringFromVersion(SupportedClientVersion), "The server you're connecting to is running on a version that does not support your client. To be able to connect to this server please update your client to the least supported version or use an older server.");
+                        Dialog.ShowDialog();
+                        tbxAddress.Clear();
+                        tbxPort.Clear();
+                        return;
+                    }
+
+                    if (MetaData.IsLockdown) {
+                        MessageBox.Show("Defectively has successfully established a connection to the server. However, the server is on lockdown and does not accept any new connection at the moment.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    Connected = true;
+                    btnLogin.Text = "Login";
+                    tbxAccountId.Enabled = tbxPassword.Enabled = true;
+                    tbxAddress.Enabled = tbxPort.Enabled = false;
+                    this.Text += $" - @{MetaData.Name}";
                 } else {
-                    MessageBox.Show("The given address is invalid. Valid could be:\n- a top-level domain like \"festival.ml\"\n- an IP like \"127.0.0.1\"\n- or \"localhost\".", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("The given port is invalid. Valid ports only contain numbers.", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+
+                // } else {
+                //     MessageBox.Show("The given address is invalid. Valid could be:\n- a top-level domain like \"festival.ml\"\n- an IP like \"127.0.0.1\"\n- or \"localhost\".", "Defectively", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // }
+
             } else {
                 cmsLogin.Show((Control) sender, new Point(1, 1), ToolStripDropDownDirection.Right);
             }

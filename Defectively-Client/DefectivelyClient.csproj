@@ -128,6 +128,12 @@
     <Compile Include="Forms\ConversationWindow.Designer.cs">
       <DependentUpon>ConversationWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CreatePunishmentDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreatePunishmentDialog.Designer.cs">
+      <DependentUpon>CreatePunishmentDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\LastMessagesWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -181,7 +187,6 @@
     <Compile Include="Management\ListenerManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Version.cs" />
     <EmbeddedResource Include="ChannelControl.resx">
       <DependentUpon>ChannelControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -196,6 +201,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ConversationWindow.resx">
       <DependentUpon>ConversationWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreatePunishmentDialog.resx">
+      <DependentUpon>CreatePunishmentDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\LastMessagesWindow.resx">
       <DependentUpon>LastMessagesWindow.cs</DependentUpon>

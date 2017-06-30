@@ -34,5 +34,5 @@ using Defectively.Compatibility;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.0.*")]
 
-[assembly: Version("0.0.3.B")]
-[assembly: LSServerVersion("0.0.3.B")]
+[assembly: Version("0.0.3.RC")]
+[assembly: LSServerVersion("0.0.3.RC")]
